@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sketch</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="libraries/p5.min.js"></script>
+    <script src="libraries/p5.sound.min.js"></script>
+    <style>
+      #iframe-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 70vw;
+        height: 85vh;
+        display: none;
+        z-index: 1000;
+        background: white;
+      }
+      #iframe-close {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        cursor: pointer;
+        background: #333;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+      }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@200..900&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="iframe-container">
+      <button id="iframe-close">關閉</button>
+      <iframe id="content-iframe" width="100%" height="100%" frameborder="0"></iframe>
+    </div>
+    <script src="sketch.js"></script>
+  </body>
+</html>
