@@ -824,21 +824,27 @@ class Motion2_1_04 {
 
 class Menu {
   constructor() {
+    // 將選單項目改為物件陣列，以支援子選單
     this.items = [
-      "第一單元作品",
-      "第一單元講義",
-      "測驗系統",
-      "淡江大學",
-      "回到首頁"
+      { name: "第一單元作品", url: "https://1baoguai0-0711.github.io/20251020/" },
+      { name: "第一單元講義", url: "https://hackmd.io/@9bxRGkqSTtm3MxsO-5tSeA/ryPgPQ0slx" },
+      { 
+        name: "測驗系統", 
+        url: "https://1baoguai0-0711.github.io/20251103/",
+        // 移除子選單
+      },
+      { name: "期中報告筆記", url: "https://hackmd.io/@9bxRGkqSTtm3MxsO-5tSeA/B1xxyumeWl" },
+      { 
+        name: "淡江大學", 
+        url: "https://www.tku.edu.tw/",
+        submenu: [
+          { name: "教育科技學系", url: "https://www.et.tku.edu.tw/" }
+        ]
+      },
+      { name: "回到首頁", action: 'reload' }
     ];
-    this.urls = {
-      "第一單元作品": "https://1baoguai0-0711.github.io/20251020/",
-      "第一單元講義": "https://hackmd.io/@9bxRGkqSTtm3MxsO-5tSeA/ryPgPQ0slx",
-      "測驗系統": "https://1baoguai0-0711.github.io/20251103/",
-      "淡江大學": "https://www.tku.edu.tw/",
-      "教育科技學系": "https://www.et.tku.edu.tw/"
-    };
-    this.isSubMenuVisible = false;
+    // 用來追蹤哪個主選單的子選單是可見的
+    this.visibleSubMenuIndex = -1; 
     
     this.setupClickHandler();
   }
@@ -846,43 +852,37 @@ class Menu {
   setupClickHandler() {
     document.querySelector('canvas').addEventListener('click', (e) => {
       if (menuX > -100) {
-        let mouseY = e.clientY;
-        let firstItemY = height/3;
-        
-        // 檢查第一個選項
-        if (e.clientX < 200 && mouseY > firstItemY - 20 && mouseY < firstItemY + 20) {
-          this.showIframe(this.urls["第一單元作品"]);
-        }
-        
-        // 檢查第二個選項
-        if (e.clientX < 200 && mouseY > firstItemY + 40 && mouseY < firstItemY + 80) {
-          this.showIframe(this.urls["第一單元講義"]);
-        }
-        
-        // 檢查第三個選項
-        if (e.clientX < 200 && mouseY > firstItemY + 100 && mouseY < firstItemY + 140) {
-          this.showIframe(this.urls["測驗系統"]);
-        }
-        
-        // 檢查第四個選項
-        if (e.clientX < 200 && mouseY > firstItemY + 160 && mouseY < firstItemY + 200) {
-          this.showIframe(this.urls["淡江大學"]);
-        }
+        const mouseY = e.clientY;
+        const mouseX_local = e.clientX; // Use a local variable for clarity
+        const firstItemY = height / 3;
+        let yOffset = 0;
 
-        // 計算子選單的 Y 座標範圍
-        let tkuItemIndex = 3; // "淡江大學" 的索引
-        let tkuItemY = firstItemY + tkuItemIndex * 60;
-        let subMenuClickY = tkuItemY + 40; // 子選單的中心 Y 座標
-        // 檢查子選單選項
-        if (this.isSubMenuVisible && e.clientX < 200 && mouseY > subMenuClickY - 20 && mouseY < subMenuClickY + 20) {
-          this.showIframe(this.urls["教育科技學系"]);
-        }
+        for (let i = 0; i < this.items.length; i++) {
+          const item = this.items[i];
+          const itemY = firstItemY + i * 60 + yOffset;
 
-        // 檢查「回到首頁」選項，考慮子選單的位移
-        let homeYOffset = this.isSubMenuVisible ? 60 : 0;
-        let homeItemY = firstItemY + 4 * 60;
-        if (e.clientX < 200 && mouseY > homeItemY + homeYOffset - 20 && mouseY < homeItemY + homeYOffset + 20) {
-          window.location.reload(); // 回到首頁通常是重新載入
+          // 檢查主選單項目點擊
+          if (mouseX_local < 200 && mouseY > itemY - 20 && mouseY < itemY + 20) {
+            if (item.url) {
+              this.showIframe(item.url);
+            } else if (item.action === 'reload') {
+              window.location.reload();
+            }
+            return; // 點擊後即可退出循環
+          }
+
+          // 檢查子選單項目點擊
+          if (this.visibleSubMenuIndex === i && item.submenu) {
+            for (let j = 0; j < item.submenu.length; j++) {
+              const subItem = item.submenu[j];
+              const subItemY = itemY + (j + 1) * 40; // 子選單的 Y 座標
+              if (mouseX_local < 200 && mouseY > subItemY - 20 && mouseY < subItemY + 20) {
+                this.showIframe(subItem.url);
+                return;
+              }
+            }
+            yOffset += item.submenu.length * 40; // 增加位移
+          }
         }
       }
     });
@@ -911,50 +911,58 @@ class Menu {
 		// 選單選項
 		textSize(32);
 		textAlign(LEFT, CENTER);
+    
+    let isHoveringAnySubMenu = false;
+    let yOffset = 0;
 
-		// 決定子選單是否可見
-		let tkuItemIndex = 3;
-		let tkuItemY = height/3 + tkuItemIndex * 60;
-		let isHoveringTku = mouseX < 200 && mouseY > tkuItemY - 20 && mouseY < tkuItemY + 20 && menuX > -100;
-		
-		let subMenuX = 20;
-		let subMenuY = tkuItemY + 40;
-		let isHoveringSubMenu = this.isSubMenuVisible && mouseX > subMenuX && mouseX < subMenuX + 180 && mouseY > subMenuY - 20 && mouseY < subMenuY + 20;
+    for (let i = 0; i < this.items.length; i++) {
+      const item = this.items[i];
+      const itemY = height / 3 + i * 60 + yOffset;
+      const isHoveringItem = menuX > -100 && mouseX < 200 && mouseY > itemY - 20 && mouseY < itemY + 20;
 
-		this.isSubMenuVisible = isHoveringTku || isHoveringSubMenu;
+      // 繪製主選單項目
+      fill(255);
+      text(item.name, 20, itemY);
+      if (isHoveringItem) {
+        fill(255, 100);
+        noStroke();
+        rect(100, itemY, 180, 40);
+      }
 
-		for(let i = 0; i < this.items.length; i++) {
-			let yOffset = 0;
-			// 如果項目在淡江大學之後，且子選單可見，則向下移動
-			if (i > tkuItemIndex && this.isSubMenuVisible) {
-				yOffset = 60;
-			}
-			let itemY = height/3 + i * 60 + yOffset;
-			let isHovering = mouseX < 200 && mouseY > itemY - 20 && mouseY < itemY + 20 && menuX > -100;
+      // 處理子選單邏輯
+      if (item.submenu) {
+        let isHoveringThisSubMenu = false;
+        for (let j = 0; j < item.submenu.length; j++) {
+          const subItemY = itemY + (j + 1) * 40;
+          if (menuX > -100 && mouseX < 200 && mouseY > subItemY - 20 && mouseY < subItemY + 20) {
+            isHoveringThisSubMenu = true;
+            isHoveringAnySubMenu = true;
+          }
+        }
 
-			fill(255);
-			text(this.items[i], 20, itemY);
+        if (isHoveringItem || (isHoveringThisSubMenu && this.visibleSubMenuIndex === i)) {
+          this.visibleSubMenuIndex = i;
+        } else if (!isHoveringAnySubMenu && this.visibleSubMenuIndex === i) {
+          this.visibleSubMenuIndex = -1;
+        }
 
-			// 滑鼠懸停效果
-			if(isHovering) {
-				fill(255, 100);
-				noStroke();
-				rect(100, itemY, 180, 40); // 懸停背景
-			}
-		}
-
-		// 處理淡江大學子選單
-		if (this.isSubMenuVisible) {
-			// 子選單背景
-			fill(isHoveringSubMenu ? [100, 100, 120, 220] : [60, 60, 70, 220]);
-			rect(100, subMenuY, 180, 40);
-			
-			// 子選單文字
-			fill(isHoveringSubMenu ? [255, 255, 0] : 255);
-			textSize(24); // 子選單文字可以小一點
-			text("教育科技學系", subMenuX, subMenuY);
-		}
-
+        if (this.visibleSubMenuIndex === i) {
+          for (let j = 0; j < item.submenu.length; j++) {
+            const subItem = item.submenu[j];
+            const subItemY = itemY + (j + 1) * 40;
+            const isHoveringSub = menuX > -100 && mouseX < 200 && mouseY > subItemY - 20 && mouseY < subItemY + 20;
+            
+            fill(isHoveringSub ? [100, 100, 120, 220] : [60, 60, 70, 220]);
+            rect(100, subItemY, 180, 40);
+            fill(isHoveringSub ? [255, 255, 0] : 255);
+            textSize(24);
+            text(subItem.name, 20, subItemY);
+          }
+          yOffset += item.submenu.length * 40;
+        }
+        textSize(32); // 恢復主選單文字大小
+      }
+    }
 		pop();
   }
 }
