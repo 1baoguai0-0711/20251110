@@ -68,12 +68,28 @@ function draw() {
 		textCurrentY = textEndY; // 確保動畫結束後文字停在正中央
 	}
 
+	// 繪製文字的半透明背景
+	noStroke();
+	fill(255, 255, 255, 25); // 非常淡的白色背景
+	rect(width / 2, textCurrentY, 600, 220, 20); // 繪製一個寬600, 高220, 圓角為20的矩形
+
 	// 在畫布中央繪製文字
 	textSize(80);
 	textAlign(CENTER, CENTER);
-	fill(255, 255, 255, 150); // 白色，帶有透明度
-	text("淡江大學", width / 2, textCurrentY);
+	fill(255, 255, 255, 180); // 白色，帶有透明度
+	// 為了容納三行文字，將第一行向上移動
+	text("淡江大學", width / 2, textCurrentY - 60);
 	
+	// 繪製第二行文字（系所）
+	textSize(40); // 使用較小的字體
+	fill(255, 255, 255, 150);
+	text("教育科技學系", width / 2, textCurrentY);
+
+	// 繪製第三行文字（學號和姓名）
+	textSize(40); // 使用較小的字體
+	fill(255, 255, 255, 150);
+	text("414730720 鄭鍶晴", width / 2, textCurrentY + 60);
+
 	// 繪製選單
 	menu.display();
 }
